@@ -32,6 +32,9 @@ class RIME_DLL UserDictManager {
   int Export(const string& dict_name, const path& text_file);
   // returns num of imported entries, -1 denotes failure
   int Import(const string& dict_name, const path& text_file);
+  // 硬刪除詞庫中已標記刪除的詞條（commits 為負值的墓碑）
+  // 回傳清除的詞條數，-1 表示失敗
+  int Purge(const string& dict_name);
 
   bool Synchronize(const string& dict_name);
   bool SynchronizeAll();

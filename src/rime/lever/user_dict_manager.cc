@@ -151,6 +151,42 @@ int UserDictManager::Import(const string& dict_name, const path& text_file) {
   return num_entries;
 }
 
+int UserDictManager::Purge(const string& dict_name) {
+  the<Db> db(user_db_component_->Create(dict_name));
+  if (!db->Open())
+    return -1;
+  BOOST_SCOPE_EXIT((&db)) {
+    db->Close();
+  }
+  BOOST_SCOPE_EXIT_END
+  if (!UserDbHelper(db).IsUserDb())
+    return -1;
+  // 同步合併語義只增不減，墓碑（commits < 0）永遠不會被清除；
+  // 先收集再刪除，避免在迭代中修改資料庫
+  vector<string> keys_to_erase;
+  {
+    an<DbAccessor> accessor = db->QueryAll();
+    if (!accessor)
+      return -1;
+    string key, value;
+    while (accessor->GetNextRecord(&key, &value)) {
+      UserDbValue v(value);
+      if (v.commits < 0)
+        keys_to_erase.push_back(key);
+    }
+  }
+  int num_purged = 0;
+  for (const string& key : keys_to_erase) {
+    if (db->Erase(key))
+      ++num_purged;
+    else
+      LOG(ERROR) << "failed to erase entry: " << key;
+  }
+  LOG(INFO) << "purged " << num_purged << " deleted entries from userdb '"
+            << dict_name << "'.";
+  return num_purged;
+}
+
 bool UserDictManager::UpgradeUserDict(const string& dict_name) {
   UserDb::Component* legacy_component = UserDb::Require("legacy_userdb");
   if (!legacy_component)

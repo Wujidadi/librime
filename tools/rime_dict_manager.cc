@@ -35,7 +35,8 @@ int main(int argc, char* argv[]) {
               << "\t-b|--backup dict_name" << std::endl
               << "\t-r|--restore xxx.userdb.txt" << std::endl
               << "\t-e|--export dict_name export.txt" << std::endl
-              << "\t-i|--import dict_name import.txt" << std::endl;
+              << "\t-i|--import dict_name import.txt" << std::endl
+              << "\t-p|--purge dict_name" << std::endl;
     SetConsoleOutputCodePage(codepage);
     return 0;
   }
@@ -97,6 +98,21 @@ int main(int argc, char* argv[]) {
     if (n == -1)
       return 1;
     std::cout << "exported " << n << " entries." << std::endl;
+    return 0;
+  }
+  if (argc == 3 && (option == "-p" || option == "--purge")) {
+    // 硬刪除墓碑後立即重建快照，否則下次同步時
+    // sync 目錄裡自己的舊快照會把墓碑合併回來
+    int n = mgr.Purge(arg1);
+    SetConsoleOutputCodePage(codepage);
+    if (n == -1)
+      return 1;
+    std::cout << "purged " << n << " deleted entries." << std::endl;
+    if (!mgr.Backup(arg1)) {
+      std::cerr << "failed to refresh snapshot in sync dir." << std::endl;
+      return 1;
+    }
+    std::cout << "snapshot refreshed." << std::endl;
     return 0;
   }
   if (argc == 4 && (option == "-i" || option == "--import")) {
