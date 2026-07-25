@@ -205,21 +205,40 @@ bool UserDbMerger::Put(const string& key, const string& value) {
   if (!db_)
     return false;
   UserDbValue v(value);
-  if (v.tick < their_tick_) {
-    v.dee = algo::formula_d(0, (double)their_tick_, v.dee, (double)v.tick);
-  }
+  // 防禦：修正異常超前於庫級 tick 的詞條 tick
+  if (v.tick > their_tick_)
+    v.tick = their_tick_;
   UserDbValue o;
   string our_value;
   if (db_->Fetch(key, &our_value)) {
     o.Unpack(our_value);
   }
-  if (o.tick < our_tick_) {
-    o.dee = algo::formula_d(0, (double)our_tick_, o.dee, (double)o.tick);
-  }
-  if (std::abs(o.commits) < std::abs(v.commits))
-    o.commits = v.commits;
-  o.dee = (std::max)(o.dee, v.dee);
-  o.tick = max_tick_;
+  if (o.tick > our_tick_)
+    o.tick = our_tick_;
+  // 保留逐詞條的事件 tick（庫級 tick 經 CloseMerge 取 max 做 Lamport 合流，
+  // 同步過的裝置之間事件 tick 可比），不再整批蓋成 max_tick_；
+  // dee 一致衰減至該詞條的合併基準，對查詢權重是資訊保持變換：
+  // dee@t 於查詢時算出 dee·exp((t−now)/200)，與衰減前後無關
+  const TickCount merged_tick = (std::max)(o.tick, v.tick);
+  const double o_dee =
+      algo::formula_d(0, (double)merged_tick, o.dee, (double)o.tick);
+  const double v_dee =
+      algo::formula_d(0, (double)merged_tick, v.dee, (double)v.tick);
+  // 刪除傳播仲裁：正負號由事件較新的一方決定，tick 平手時刪除勝；
+  // 絕對值取兩者較大，保留使用量歷史供日後復活延續
+  const bool o_deleted = o.commits < 0;
+  const bool v_deleted = v.commits < 0;
+  const int magnitude = (std::max)(std::abs(o.commits), std::abs(v.commits));
+  bool deleted = false;
+  if (o_deleted == v_deleted)
+    deleted = o_deleted;
+  else if (o.tick != v.tick)
+    deleted = o.tick > v.tick ? o_deleted : v_deleted;
+  else
+    deleted = true;
+  o.commits = deleted ? -magnitude : magnitude;
+  o.dee = (std::max)(o_dee, v_dee);
+  o.tick = merged_tick;
   return db_->Update(key, o.Pack()) && ++merged_entries_;
 }
 
