@@ -7,8 +7,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(rime_version 1.17.0)
 set(rime_soversion 1)
+# fork 版號僅作顯示字串（rime_api、installation.yaml、userdb 中繼資料）；
+# rime_version 保持純數字，供 dylib 的 -current_version 使用（連結器不吃後綴）
+set(rime_fork_version "${rime_version}-wujidadi")
 
-add_definitions(-DRIME_VERSION="${rime_version}")
+add_definitions(-DRIME_VERSION="${rime_fork_version}")
 
 # generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

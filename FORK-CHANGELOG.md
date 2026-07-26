@@ -1,11 +1,15 @@
 # Fork 變更日誌
 
-本檔記錄本 fork（Wujidadi/librime）相對上游 rime/librime 的所有變動，依日期分節。
+本檔記錄本 fork（Wujidadi/librime）相對上游 rime/librime 的所有變動，依 fork 版號分節。
 上游自身的變更見 `CHANGELOG.md`。
 
-## 2026-07-25
+## 1.17.0-wujidadi — 2026-07-26
 
-基於上游 master d4c324ca（1.17.0 之後的開發版）。
+基於上游 master d4c324ca（1.17.0 之後的開發版）。首個 fork 版。
+
+### 版號
+
+- fork 版號標記 `1.17.0-wujidadi`：僅改 `RIME_VERSION` 顯示字串（rime_api、installation.yaml、userdb 中繼資料），dylib 的 `-current_version` 維持純數字 `1.17.0`（連結器限制）；藉此可直接分辨機器上跑的是官方或 fork 的 librime
 
 ### 新功能
 
