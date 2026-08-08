@@ -175,6 +175,10 @@ if(MSVC)
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
   add_definitions("/wd4244 /wd4996")
 
+  # 原始碼一律以 UTF-8 解讀；在雙位元組系統字碼頁（如 CP950）下，
+  # 缺此旗標會使中文註解的 UTF-8 尾位元組與換行符誤組成雙位元組字元而吞掉下一行程式碼
+  add_compile_options(/utf-8)
+
   # large address aware
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /LARGEADDRESSAWARE")

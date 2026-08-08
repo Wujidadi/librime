@@ -12,6 +12,10 @@
 - fork 版號標記 `1.17.0-wujidadi`：僅改 `RIME_VERSION` 顯示字串（rime_api、installation.yaml、userdb 中繼資料），dylib 的 `-current_version` 維持純數字 `1.17.0`（連結器限制）；藉此可直接分辨機器上跑的是官方或 fork 的 librime
 - Windows 端 `rime.dll` 的資源字串 `ProductVersion` 改用 `rime_fork_version`（`src/rime.rc` 三處語系區塊），檔案內容的詳細資料頁可直接分辨 fork；`FILEVERSION`／`PRODUCTVERSION` 數值欄位維持純數字四段（RC 格式硬性限制），與 dylib `-current_version` 的顧慮對等
 
+### 建置修正（Windows）
+
+- MSVC 加上 `/utf-8` 編譯旗標：在雙位元組系統字碼頁（如台灣的 CP950）下，MSVC 預設以系統字碼頁解讀原始碼，中文註解的 UTF-8 尾位元組會與換行符誤組成雙位元組字元而吞掉下一行程式碼（如 `spelling.h` 的 `Compose` 宣告），導致大量詭異編譯錯誤；上游 CI 用英文單位元組字碼頁只會註解亂碼、不會吞行，故從未暴露
+
 ### 新功能
 
 - `rime_dict_manager` 新增 `-p|--purge <詞庫名>`：硬刪除 userdb 中 commits 為負值的墓碑詞條，並自動重建 sync 快照以免下次同步時被自己的舊快照合併回來；官方語義下墓碑永遠無法清除，過往只能以「編輯快照＋刪除 LevelDB 重建」繞過（2baa8b45）
