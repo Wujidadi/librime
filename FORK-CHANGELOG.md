@@ -10,6 +10,7 @@
 ### 版號
 
 - fork 版號標記 `1.17.0-wujidadi`：僅改 `RIME_VERSION` 顯示字串（rime_api、installation.yaml、userdb 中繼資料），dylib 的 `-current_version` 維持純數字 `1.17.0`（連結器限制）；藉此可直接分辨機器上跑的是官方或 fork 的 librime
+- Windows 端 `rime.dll` 的資源字串 `ProductVersion` 改用 `rime_fork_version`（`src/rime.rc` 三處語系區塊），檔案內容的詳細資料頁可直接分辨 fork；`FILEVERSION`／`PRODUCTVERSION` 數值欄位維持純數字四段（RC 格式硬性限制），與 dylib `-current_version` 的顧慮對等
 
 ### 新功能
 

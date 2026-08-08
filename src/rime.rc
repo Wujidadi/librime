@@ -27,7 +27,7 @@ BEGIN
       VALUE "LegalCopyright", "式恕堂 版权所无"
       VALUE "OriginalFilename", "@original_filename@"
       VALUE "ProductName", "中州韵输入法引擎"
-      VALUE "ProductVersion", "@rime_version@@tag_suffix@"
+      VALUE "ProductVersion", "@rime_fork_version@@tag_suffix@"
     END
     BLOCK "040904b0"
     BEGIN
@@ -37,7 +37,7 @@ BEGIN
       VALUE "LegalCopyright", "式恕堂 版權所無"
       VALUE "OriginalFilename", "@original_filename@"
       VALUE "ProductName", "中州韻輸入法引擎"
-      VALUE "ProductVersion", "@rime_version@@tag_suffix@"
+      VALUE "ProductVersion", "@rime_fork_version@@tag_suffix@"
     END
 #endif
     BLOCK "040904E4"
@@ -48,7 +48,7 @@ BEGIN
       VALUE "LegalCopyright", "Copyleft Rime Developers"
       VALUE "OriginalFilename", "@original_filename@"
       VALUE "ProductName", "Rime Input Method Engine"
-      VALUE "ProductVersion", "@rime_version@@tag_suffix@"
+      VALUE "ProductVersion", "@rime_fork_version@@tag_suffix@"
     END
   END
   BLOCK "VarFileInfo"
