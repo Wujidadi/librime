@@ -15,6 +15,7 @@
 ### 建置修正（Windows）
 
 - MSVC 加上 `/utf-8` 編譯旗標：在雙位元組系統字碼頁（如台灣的 CP950）下，MSVC 預設以系統字碼頁解讀原始碼，中文註解的 UTF-8 尾位元組會與換行符誤組成雙位元組字元而吞掉下一行程式碼（如 `spelling.h` 的 `Compose` 宣告），導致大量詭異編譯錯誤；上游 CI 用英文單位元組字碼頁只會註解亂碼、不會吞行，故從未暴露
+- `user_db.h` 補 `RIME_DLL` 匯出標記（`UserDbValue` 的字串建構式、`Pack`、`Unpack`，及 `UserDbMerger` 類別）：`RimeUserDbMergeTest` 連結共享版 `rime.dll` 時需要這些符號；macOS 的 dylib 預設全符號可見，Windows 需明確標記
 
 ### 新功能
 

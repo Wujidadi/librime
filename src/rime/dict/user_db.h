@@ -23,10 +23,10 @@ struct UserDbValue {
   TickCount tick = 0;
 
   UserDbValue() = default;
-  UserDbValue(const string& value);
+  RIME_DLL UserDbValue(const string& value);
 
-  string Pack() const;
-  bool Unpack(const string& value);
+  RIME_DLL string Pack() const;
+  RIME_DLL bool Unpack(const string& value);
 };
 
 /**
@@ -108,7 +108,7 @@ class UserDbComponent : public UserDb::Component, protected DbComponentBase {
   string extension() const override;
 };
 
-class UserDbMerger : public Sink {
+class RIME_DLL UserDbMerger : public Sink {
  public:
   explicit UserDbMerger(Db* db);
   virtual ~UserDbMerger();
