@@ -3,6 +3,13 @@
 本檔記錄本 fork（Wujidadi/librime）相對上游 rime/librime 的所有變動，依 fork 版號分節。
 上游自身的變更見 `CHANGELOG.md`。
 
+## 未進版
+
+### 建置
+
+- macOS 預設部署目標 `MACOSX_DEPLOYMENT_TARGET` 自 `10.15` 改為 `13.0`（與 Squirrel 專案一致）：
+  Xcode／Command Line Tools 27 的 libc++ 拒絕 macOS 11 以下的部署目標，以 `-Werror` 編譯的 leveldb 等相依套件會直接失敗
+
 ## 1.17.0-wujidadi.1 — 2026-09-23
 
 基於上游 master ef1a16aa。
