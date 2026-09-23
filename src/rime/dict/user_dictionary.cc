@@ -28,6 +28,7 @@ struct DfsState {
   size_t depth_limit;
   size_t predict_word_from_depth;
   TickCount present_tick;
+  double discard_threshold;
   Code code;
   vector<double> credibility;
   vector<double> quality_len;
@@ -75,7 +76,7 @@ void DfsState::RecruitEntry(size_t pos,
   string full_code;
   auto e = UserDictionary::CreateDictEntry(
       key, value, present_tick, credibility.back(), quality_len.back(),
-      syllabary ? &full_code : nullptr);
+      syllabary ? &full_code : nullptr, discard_threshold);
   if (e) {
     if (syllabary) {
       vector<string> syllables =
@@ -325,6 +326,7 @@ an<UserDictEntryCollector> UserDictionary::Lookup(
   state.predict_word_from_depth = predict_word_from_depth;
   FetchTickCount();
   state.present_tick = tick_ + 1;
+  state.discard_threshold = discard_threshold_;
   state.credibility.push_back(initial_credibility);
   state.quality_len.push_back(0.0);
   state.accessor = db_->Query("");
@@ -392,7 +394,8 @@ size_t UserDictionary::LookupWords(UserDictEntryIterator* result,
       break;
     }
     last_key = key;
-    auto e = CreateDictEntry(key, value, present_tick, 1.0, len, &full_code);
+    auto e = CreateDictEntry(key, value, present_tick, 1.0, len, &full_code,
+                             discard_threshold_);
     if (!e)
       continue;
     e->custom_code = full_code;
@@ -529,15 +532,13 @@ bool UserDictionary::TranslateCodeToString(const Code& code, string* result) {
   return true;
 }
 
-// Corresponds to log2(1/T)*200*ln(2) ticks.
-constexpr double kDiscardThreshold = 1e-200;
-
 an<DictEntry> UserDictionary::CreateDictEntry(const string& key,
                                               const string& value,
                                               TickCount present_tick,
                                               double credibility,
                                               double quality_len,
-                                              string* full_code) {
+                                              string* full_code,
+                                              double discard_threshold) {
   an<DictEntry> e;
   size_t separator_pos = key.find('\t');
   if (separator_pos == string::npos)
@@ -551,7 +552,8 @@ an<DictEntry> UserDictionary::CreateDictEntry(const string& key,
     v.dee = algo::formula_d(0, (double)present_tick, v.dee, (double)v.tick);
   // tick==0: table/stabledb phrases (custom_phrase.txt etc.) never entered
   // userdb decay. Discard only aged user-history entries.
-  if (v.tick != 0 && v.dee <= kDiscardThreshold)
+  // 門檻 T 相當於落後 log2(1/T)*200*ln(2) 個 tick；0 表示不遺忘
+  if (v.tick != 0 && discard_threshold > 0 && v.dee <= discard_threshold)
     return e;
   // create!
   e = New<DictEntry>();
@@ -600,6 +602,9 @@ UserDictionary* UserDictionaryComponent::Create(const Ticket& ticket) {
   config->GetBool(ticket.name_space + "/enable_user_dict", &enable_user_dict);
   if (!enable_user_dict)
     return NULL;
+  double discard_threshold = 0.0;
+  config->GetDouble(ticket.name_space + "/user_dict_forget_threshold",
+                    &discard_threshold);
   string dict_name;
   if (config->GetString(ticket.name_space + "/user_dict", &dict_name)) {
     // user specified name
@@ -616,7 +621,10 @@ UserDictionary* UserDictionaryComponent::Create(const Ticket& ticket) {
     // user specified db class
   }
   // obtain userdb object
-  return Create(dict_name, db_class);
+  auto* user_dict = Create(dict_name, db_class);
+  if (user_dict)
+    user_dict->set_discard_threshold(discard_threshold);
+  return user_dict;
 }
 
 }  // namespace rime

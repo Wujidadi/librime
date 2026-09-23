@@ -3,6 +3,22 @@
 本檔記錄本 fork（Wujidadi/librime）相對上游 rime/librime 的所有變動，依 fork 版號分節。
 上游自身的變更見 `CHANGELOG.md`。
 
+## 1.17.0-wujidadi.1 — 2026-09-23
+
+基於上游 master ef1a16aa。
+
+### 版號
+
+- fork 版號調升為 `1.17.0-wujidadi.1`：僅改 `rime_fork_version`，`rime_version` 維持 `1.17.0`
+
+### 行為變更（詞條老化）
+
+- 上游 de21e7d4（PR #1205）在 `UserDictionary::CreateDictEntry` 加入常量門檻 `1e-200`：查詢時先把 dee 依 `exp((t − present_tick)/200)` 衰減，`t != 0` 且衰減後 dee 不高於門檻的詞條整條丟棄，相當於落後庫級 tick 約 92103 即遺忘
+- 舊版合併語義曾把整批詞條的 t 蓋成 `max_tick`，這些詞條的 t 同時落後庫級 tick，跨過門檻時會一次全部失效、候選退回字典表順序；2026-09-22 在鼠鬚管實機驗證 terra_pinyin userdb 因此丟失 839,655 條
+- 門檻改為設定項 `<ns>/user_dict_forget_threshold`（double，與 `enable_user_dict` 同層），fork 預設 `0` 代表不遺忘；設為 `1e-200` 即恢復上游行為，不必重編
+- `CreateDictEntry` 末尾新增參數 `discard_threshold`（預設 `0`），`UserDictionary` 新增成員 `discard_threshold_` 與存取器；只動 `user_dictionary.h`／`user_dictionary.cc`，不碰 `user_db.cc` 的 `Pack`／`Unpack`，避免與上游 PR #1215（門檻搬到 `user_db.h` 並在 `Pack` 時鉗為 0）交疊
+- 上游測試 `VeryOldDecayedEntryIsDiscarded` 改為明確傳入 `1e-200`；新增 3 項 `UserDictionary` 測試（門檻 0 保留老化詞條、門檻 `1e-200` 丟棄、門檻 `1e-200` 不影響新詞條）
+
 ## 1.17.0-wujidadi — 2026-07-26
 
 基於上游 master d4c324ca（1.17.0 之後的開發版）。首個 fork 版。

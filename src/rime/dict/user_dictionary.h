@@ -78,13 +78,19 @@ class UserDictionary : public Class<UserDictionary, const Ticket&> {
 
   const string& name() const { return name_; }
   TickCount tick() const { return tick_; }
+  // 衰減後 dee 低於門檻的舊詞條在查詢時整條丟棄；0 表示不遺忘
+  double discard_threshold() const { return discard_threshold_; }
+  void set_discard_threshold(double threshold) {
+    discard_threshold_ = threshold;
+  }
 
   RIME_DLL static an<DictEntry> CreateDictEntry(const string& key,
                                                 const string& value,
                                                 TickCount present_tick,
                                                 double credibility = 0.0,
                                                 double quality_len = 0.0,
-                                                string* full_code = nullptr);
+                                                string* full_code = nullptr,
+                                                double discard_threshold = 0.0);
 
  protected:
   bool Initialize();
@@ -104,6 +110,7 @@ class UserDictionary : public Class<UserDictionary, const Ticket&> {
   hash_map<SyllableId, string> rev_syllabary_;
   TickCount tick_ = 0;
   time_t transaction_time_ = 0;
+  double discard_threshold_ = 0.0;
 };
 
 class UserDictionaryComponent : public UserDictionary::Component {
