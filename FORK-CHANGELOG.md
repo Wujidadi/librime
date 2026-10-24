@@ -3,7 +3,14 @@
 本檔記錄本 fork（Wujidadi/librime）相對上游 rime/librime 的所有變動，依 fork 版號分節。
 上游自身的變更見 `CHANGELOG.md`。
 
-## 未進版
+## 1.17.0-wujidadi.2 — 2026-10-24
+
+基於上游 master 1b3417d2。
+
+### 上游同步
+
+- 合入上游 master 1b3417d2（23 個 commit），含 boost 1.92.0、C++20 支援、依執行期條件啟用元件、`streaming_chord` 修正
+- `test/user_db_test.cc` 衝突解法：fork 的合併測試與上游的 `RimeUserDbValueTest.Denormal` 並存
 
 ### 建置
 

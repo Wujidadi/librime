@@ -9,19 +9,28 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
+          - ubuntu-26.04-arm
         compiler: [gcc, clang]
         include:
           - compiler: gcc
             cxx_compiler: g++
           - compiler: clang
             cxx_compiler: clang++
+        # boost bootstrap failed on arm platform with clang
+        exclude:
+          - os: ubuntu-26.04-arm
+            compiler: clang
     env:
       CC: ${{ matrix.compiler }}
       CXX: ${{ matrix.cxx_compiler }}
+      BOOST_ROOT: ${{ github.workspace }}/deps/boost
+      boost_libs: regex
     
     steps:
       - name: Checkout last commit

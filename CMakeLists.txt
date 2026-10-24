@@ -9,7 +9,7 @@ set(rime_version 1.17.0)
 set(rime_soversion 1)
 # fork 版號僅作顯示字串（rime_api、installation.yaml、userdb 中繼資料）；
 # rime_version 保持純數字，供 dylib 的 -current_version 使用（連結器不吃後綴）
-set(rime_fork_version "${rime_version}-wujidadi.1")
+set(rime_fork_version "${rime_version}-wujidadi.2")
 
 add_definitions(-DRIME_VERSION="${rime_fork_version}")
 
@@ -65,7 +65,7 @@ if(MSVC)
   set(Boost_USE_STATIC_RUNTIME ON)
 endif()
 
-if(LINUX)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   find_package(Boost 1.74.0 REQUIRED COMPONENTS regex)
 else()
   find_package(Boost 1.77.0)
@@ -174,6 +174,7 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
   set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
   add_definitions("/wd4244 /wd4996")
+  add_compile_options("/Zc:__cplusplus")
 
   # 原始碼一律以 UTF-8 解讀；在雙位元組系統字碼頁（如 CP950）下，
   # 缺此旗標會使中文註解的 UTF-8 尾位元組與換行符誤組成雙位元組字元而吞掉下一行程式碼
