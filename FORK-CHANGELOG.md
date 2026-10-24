@@ -16,6 +16,8 @@
 
 - macOS 預設部署目標 `MACOSX_DEPLOYMENT_TARGET` 自 `10.15` 改為 `13.0`（與 Squirrel 專案一致）：
   Xcode／Command Line Tools 27 的 libc++ 拒絕 macOS 11 以下的部署目標，以 `-Werror` 編譯的 leveldb 等相依套件會直接失敗
+- `user_db.h` 的 `UserDbValue` 移除 fork `9b46caec` 加在成員上的 `RIME_DLL`，改由上游 `d2ec5c18` 加在結構上的 `RIME_DLL` 統一匯出：
+  兩者並存時 MSVC 報 C2487（DLL 介面類別的成員不可再以 DLL 介面宣告），macOS 不受影響
 
 ## 1.17.0-wujidadi.1 — 2026-09-23
 

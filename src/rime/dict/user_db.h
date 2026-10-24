@@ -23,10 +23,10 @@ struct RIME_DLL UserDbValue {
   TickCount tick = 0;
 
   UserDbValue() = default;
-  RIME_DLL UserDbValue(const string& value);
+  UserDbValue(const string& value);
 
-  RIME_DLL string Pack() const;
-  RIME_DLL bool Unpack(const string& value);
+  string Pack() const;
+  bool Unpack(const string& value);
 };
 
 /**
