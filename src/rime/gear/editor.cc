@@ -49,7 +49,10 @@ ProcessResult Editor::ProcessKeyEvent(const KeyEvent& key_event) {
   int ch = key_event.keycode();
   Context* ctx = engine_->context();
   if (ctx->IsComposing()) {
-    auto result = KeyBindingProcessor::ProcessKeyEvent(key_event, ctx, 0,
+    KeyEvent normalized =
+        ch == XK_KP_Enter ? KeyEvent(XK_Return, key_event.modifier())
+                          : key_event;
+    auto result = KeyBindingProcessor::ProcessKeyEvent(normalized, ctx, 0,
                                                        FallbackOptions::All);
     if (result != kNoop) {
       return result;
