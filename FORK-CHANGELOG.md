@@ -19,6 +19,7 @@
   - 未經左 Shift 進入（如右 Shift 確認後）且未鍵入西文：只切回中文，已確認段保留、退格重開的段重新轉換為中文候選（上游上屏整串輸入碼）
 - 已確認段的西文改以 `Segment::kConfirmed` 直接標記，不經 `select_notifier`，`express_editor` 的自動上屏因此不會觸發
 - 左 Shift 進入臨時西文時保留已確認段的輸入碼，只把未確認部分換成實體按鍵；上游以 `set_input(raw_keys_)` 覆蓋整串輸入，已確認段隨之消失
+- 實體按鍵紀錄 `raw_keys_` 為空時（右 Shift 確認會清空，之後退格重開的段沒有紀錄），左 Shift 改從輸入碼取回未確認部分：上游此時以空字串覆蓋輸入，編輯區清空並切成全西文
 - 編輯器把數字鍵盤 Enter（`KP_Enter`）比照主鍵盤 Return 處理，含 Shift、Control 組合：
   上游編輯器只綁定 `Return`，輸入中按數字鍵盤 Enter 不被 Rime 處理，編輯區原封不動、按鍵直送應用程式
 - 右 Shift 在 `express_editor` 下照舊確認即上屏，刻意未改

@@ -97,7 +97,8 @@ void AsciiComposer::CommitAndReset(const string& text) {
   }
 }
 
-// 已確認段（如右 Shift 確認的中文）的輸入碼，進出臨時西文時須原樣保留
+// 已確認段（如右 Shift 確認的中文）的輸入碼，進出臨時西文時須原樣保留；
+// 右 Shift 確認會清空 raw_keys_，之後退格重開的段只能從輸入碼取回實體按鍵
 static string ConfirmedInput(Context* ctx) {
   return ctx->input().substr(0, ctx->composition().GetConfirmedPosition());
 }
@@ -118,7 +119,7 @@ void AsciiComposer::EnterInlineAsciiWithChar(char ch) {
 
   cached_input_ = ctx->input();
   string confirmed = ConfirmedInput(ctx);
-  if (!confirmed.empty()) {
+  if (!confirmed.empty() || raw_keys_.empty()) {
     raw_keys_ = ctx->input().substr(confirmed.length());
   }
   cached_raw_keys_ = raw_keys_;
@@ -478,7 +479,7 @@ void AsciiComposer::TransitInlineAscii(Context* ctx, bool entering_ascii) {
     // 中文 -> 臨時西文：保存和弦快照，抹除候選菜單，換上實體字母
     cached_input_ = ctx->input();
     string confirmed = ConfirmedInput(ctx);
-    if (!confirmed.empty()) {
+    if (!confirmed.empty() || raw_keys_.empty()) {
       raw_keys_ = ctx->input().substr(confirmed.length());
     }
     cached_raw_keys_ = raw_keys_;
