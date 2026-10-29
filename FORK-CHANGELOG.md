@@ -5,7 +5,13 @@
 
 ## 1.17.0-wujidadi.3 — 2026-10-29
 
-基於上游 master 1b3417d2。
+基於上游 master 56737cd2。
+
+### 上游同步
+
+- 合入上游 master 56737cd2（5 個 commit）：googletest v1.18.0、yaml-cpp 0.9.0、leveldb 升至 bb74ef73，以及 CI 新增 Windows 11 Arm64 與 Ubuntu arm64 clang 建置
+- leveldb 新版可直接讀寫舊版建立的 userdb，`rime_dict_manager` 匯出、備份與還原往返的結果與舊版逐條相同
+- yaml-cpp 0.9.0 在部署產出的方案檔中，於 `description: |` 區塊字串末尾多輸出一個空行；依 YAML 的 clip 截尾規則，解析後的值不變
 
 ### 行為變更（Shift 切換與 Enter 上屏）
 
