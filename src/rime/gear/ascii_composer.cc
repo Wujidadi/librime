@@ -97,17 +97,37 @@ void AsciiComposer::CommitAndReset(const string& text) {
   }
 }
 
+// 已確認段（如右 Shift 確認的中文）的輸入碼，進出臨時西文時須原樣保留
+static string ConfirmedInput(Context* ctx) {
+  return ctx->input().substr(0, ctx->composition().GetConfirmedPosition());
+}
+
+// 臨時西文段在回中文時定為已確認段：不經 select_notifier，免得自動上屏
+static void ConfirmAsciiSegment(Context* ctx) {
+  Composition& comp = ctx->composition();
+  comp.Trim();
+  if (!comp.empty() && comp.back().status < Segment::kSelected &&
+      comp.back().end > comp.back().start) {
+    comp.back().status = Segment::kConfirmed;
+    comp.Forward();
+  }
+}
+
 void AsciiComposer::EnterInlineAsciiWithChar(char ch) {
   Context* ctx = engine_->context();
 
   cached_input_ = ctx->input();
+  string confirmed = ConfirmedInput(ctx);
+  if (!confirmed.empty()) {
+    raw_keys_ = ctx->input().substr(confirmed.length());
+  }
   cached_raw_keys_ = raw_keys_;
   raw_keys_.push_back(ch);
 
   // 抹除中文未確認候選菜單與和弦輸入，讓西文即時回顯
   ctx->ClearNonConfirmedComposition();
 
-  ctx->set_input(raw_keys_);
+  ctx->set_input(confirmed + raw_keys_);
   ctx->set_option("ascii_mode", true);
   is_inline_ascii_ = true;
 }
@@ -212,11 +232,11 @@ ProcessResult AsciiComposer::ProcessKeyEvent(const KeyEvent& key_event) {
   // 7. 臨時西文模式結算行爲（空格或回車確認上屏，秒回中文）
   if (ascii_mode && ctx->IsComposing()) {
     if (ch == XK_space && key_event.modifier() == 0) {
-      CommitAndReset(ctx->input() + " ");
+      CommitAndReset(ctx->GetCommitText() + " ");
       return kAccepted;
     }
     if ((ch == XK_Return || ch == XK_KP_Enter) && key_event.modifier() == 0) {
-      CommitAndReset(ctx->input());
+      CommitAndReset(ctx->GetCommitText());
       return kAccepted;
     }
   }
@@ -457,9 +477,13 @@ void AsciiComposer::TransitInlineAscii(Context* ctx, bool entering_ascii) {
   if (entering_ascii) {
     // 中文 -> 臨時西文：保存和弦快照，抹除候選菜單，換上實體字母
     cached_input_ = ctx->input();
+    string confirmed = ConfirmedInput(ctx);
+    if (!confirmed.empty()) {
+      raw_keys_ = ctx->input().substr(confirmed.length());
+    }
     cached_raw_keys_ = raw_keys_;
     ctx->ClearNonConfirmedComposition();
-    ctx->set_input(raw_keys_);
+    ctx->set_input(confirmed + raw_keys_);
     is_inline_ascii_ = true;
     return;
   }
@@ -468,10 +492,9 @@ void AsciiComposer::TransitInlineAscii(Context* ctx, bool entering_ascii) {
   if (!cached_input_.empty() && raw_keys_ == cached_raw_keys_) {
     // 未修改：完美還原中文和弦
     ctx->set_input(cached_input_);
-  } else {
-    // 已修改：直接提交當前西文，乾淨復位
-    engine_->CommitText(ctx->input());
-    ctx->Clear();
+  } else if (!raw_keys_.empty()) {
+    // 已修改：西文留在編輯區成為已確認段，不上屏
+    ConfirmAsciiSegment(ctx);
     raw_keys_.clear();
   }
   cached_input_.clear();
