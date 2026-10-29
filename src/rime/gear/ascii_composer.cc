@@ -114,6 +114,12 @@ static void ConfirmAsciiSegment(Context* ctx) {
   }
 }
 
+static bool HasReopenedSegment(Context* ctx) {
+  const Composition& comp = ctx->composition();
+  return !comp.empty() && comp.back().status < Segment::kSelected &&
+         comp.back().end > comp.back().start;
+}
+
 void AsciiComposer::EnterInlineAsciiWithChar(char ch) {
   Context* ctx = engine_->context();
 
@@ -443,6 +449,12 @@ void AsciiComposer::SwitchAsciiMode(bool ascii_mode,
 
   switch (style) {
     case kAsciiModeSwitchInline:
+      // 右 Shift 確認後退格重開的中文段仍處於西文模式：視同中文輸入中，直接進入臨時西文
+      if (!ascii_mode && cached_input_.empty() && raw_keys_.empty() &&
+          HasReopenedSegment(ctx)) {
+        TransitInlineAscii(ctx, true);
+        return;
+      }
       TransitInlineAscii(ctx, ascii_mode);
       break;
 
