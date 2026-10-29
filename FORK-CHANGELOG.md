@@ -3,6 +3,26 @@
 本檔記錄本 fork（Wujidadi/librime）相對上游 rime/librime 的所有變動，依 fork 版號分節。
 上游自身的變更見 `CHANGELOG.md`。
 
+## 1.17.0-wujidadi.3 — 2026-10-29
+
+基於上游 master 1b3417d2。
+
+### 行為變更（Shift 切換與 Enter 上屏）
+
+以下以方案預設的 `Shift_L: inline_ascii`、`Shift_R: commit_text` 為準；`fluid_editor`（注音、地球拼音）與 `express_editor`（倉頡）分別註明。
+
+- 臨時西文狀態下按 Return／空白，改為上屏編輯區的組字結果（`Context::GetCommitText`）：
+  上游上屏整串輸入碼，右 Shift 確認的中文（`fluid_editor` 下確認而不上屏）因此退回原始按鍵，例如 `su3` 確認成「你」後按 Return 上屏 `su3`
+- 左 Shift 離開臨時西文時一律不上屏：
+  - 西文未修改：還原進入前的中文組字（與上游相同）
+  - 西文已修改：西文定為已確認段留在編輯區，切回中文後可接著輸入，最後一併上屏（上游直接上屏西文）
+  - 未經左 Shift 進入（如右 Shift 確認後）且未鍵入西文：只切回中文，已確認段保留、退格重開的段重新轉換為中文候選（上游上屏整串輸入碼）
+- 已確認段的西文改以 `Segment::kConfirmed` 直接標記，不經 `select_notifier`，`express_editor` 的自動上屏因此不會觸發
+- 左 Shift 進入臨時西文時保留已確認段的輸入碼，只把未確認部分換成實體按鍵；上游以 `set_input(raw_keys_)` 覆蓋整串輸入，已確認段隨之消失
+- 編輯器把數字鍵盤 Enter（`KP_Enter`）比照主鍵盤 Return 處理，含 Shift、Control 組合：
+  上游編輯器只綁定 `Return`，輸入中按數字鍵盤 Enter 不被 Rime 處理，編輯區原封不動、按鍵直送應用程式
+- 右 Shift 在 `express_editor` 下照舊確認即上屏，刻意未改
+
 ## 1.17.0-wujidadi.2 — 2026-10-24
 
 基於上游 master 1b3417d2。
